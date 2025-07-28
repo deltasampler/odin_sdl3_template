@@ -1,6 +1,8 @@
 package main
 
 import "core:fmt"
+import rand "core:math/rand"
+import glm "core:math/linalg/glsl"
 import sdl "vendor:sdl3"
 import gl "vendor:OpenGL"
 
@@ -10,7 +12,18 @@ WINDOW_HEIGHT :: 540
 GL_VERSION_MAJOR :: 4
 GL_VERSION_MINOR :: 6
 
+POINT_CAP :: 1024
+POINT_POS_MIN : f32 : -256
+POINT_POS_MAX : f32 : 256
+POINT_RADIUS_MIN : f32 : 0.5
+POINT_RADIUS_MAX : f32 : 8
+
 VERTEX_SOURCE :: `#version 460 core
+    layout(location = 0) in vec3 i_position;
+    layout(location = 1) in float i_radius;
+    layout(location = 2) in int i_color;
+    flat out float v_radius;
+    flat out int v_color;
     out vec2 v_tex_coord;
     uniform mat4 u_projection;
     uniform mat4 u_view;
@@ -30,26 +43,56 @@ VERTEX_SOURCE :: `#version 460 core
     );
 
     void main() {
-        gl_Position = u_projection * u_view * vec4(positions[gl_VertexID], 0.0, 1.0);
+        mat3 cam_rot = transpose(mat3(u_view));
+        vec3 local = cam_rot * vec3(positions[gl_VertexID] * i_radius, 0.0);
+        vec3 position = local + i_position;
+
+        gl_Position = u_projection * u_view * vec4(position, 1.0);
+        v_radius = i_radius;
+        v_color = i_color;
         v_tex_coord = tex_coords[gl_VertexID];
     }
 `
 
 FRAGMENT_SOURCE :: `#version 460 core
     precision mediump float;
+    flat in int v_color;
     in vec2 v_tex_coord;
     out vec4 o_frag_color;
 
-    void main() {
-        vec2 uv = v_tex_coord * 2.0 - 1.0;
+    vec3 get_color(int color) {
+        return vec3(
+            (color >> 16) & 0xFF,
+            (color >> 8) & 0xFF,
+            color & 0xFF
+        ) / 255.0;
+    }
 
-        if (length(uv) > 1.0) {
+    void main() {
+        vec2 uv = v_tex_coord;
+        vec2 cp = uv * 2.0 - 1.0;
+
+        if (cp.x * cp.x + cp.y * cp.y > 1.0) {
             discard;
         }
 
-        o_frag_color = vec4(v_tex_coord, 0.0, 1.0);
+        o_frag_color = vec4(get_color(v_color), 1.0);
     }
 `
+
+Point :: struct {
+    position: glm.vec3,
+    radius: f32,
+    color: i32
+}
+
+pack_color :: proc(color: glm.ivec3) -> i32 {
+    return (color.x << 16) | (color.y << 8) | color.z;
+}
+
+random_color :: proc() -> i32 {
+    return pack_color({rand.int31() % 256, rand.int31() % 256, rand.int31() % 256})
+}
 
 main :: proc() {
     if !sdl.Init({.VIDEO}) {
@@ -82,8 +125,7 @@ main :: proc() {
     time_last := time
 
     camera: Camera; camera_new(&camera)
-    camera.position = {3, 3, 3}
-    camera_point_at(&camera, {0, 0, 0})
+    camera.movement_speed = 30
 
     program, program_status := gl.load_shaders_source(VERTEX_SOURCE, FRAGMENT_SOURCE)
     uniforms := gl.get_uniforms_from_program(program)
@@ -96,8 +138,37 @@ main :: proc() {
 
     defer gl.DeleteProgram(program)
 
+    points : [POINT_CAP]Point
+
+    for &point in points {
+        point.position = {rand.float32_range(POINT_POS_MIN, POINT_POS_MAX), rand.float32_range(POINT_POS_MIN, POINT_POS_MAX), rand.float32_range(POINT_POS_MIN, POINT_POS_MAX)}
+        point.radius = rand.float32_range(POINT_RADIUS_MIN, POINT_RADIUS_MAX)
+        point.color = random_color()
+    }
+
     vao: u32; gl.GenVertexArrays(1, &vao); defer gl.DeleteVertexArrays(1, &vao)
     gl.BindVertexArray(vao)
+
+    vbo: u32; gl.GenBuffers(1, &vbo); defer gl.DeleteBuffers(1, &vbo)
+    gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+    gl.BufferData(gl.ARRAY_BUFFER, POINT_CAP * size_of(Point), &points, gl.STATIC_DRAW)
+
+    offset: i32 = 0
+    gl.EnableVertexAttribArray(0)
+    gl.VertexAttribPointer(0, 3, gl.FLOAT, gl.FALSE, size_of(Point), auto_cast offset)
+    gl.VertexAttribDivisor(0, 1)
+
+    offset += size_of(glm.vec3)
+    gl.EnableVertexAttribArray(1)
+    gl.VertexAttribPointer(1, 1, gl.FLOAT, gl.FALSE, size_of(Point), auto_cast offset)
+    gl.VertexAttribDivisor(1, 1)
+
+    offset += size_of(i32)
+    gl.EnableVertexAttribArray(2)
+    gl.VertexAttribIPointer(2, 1, gl.INT, size_of(Point), auto_cast offset)
+    gl.VertexAttribDivisor(2, 1)
+
+    gl.Enable(gl.DEPTH_TEST)
 
     loop: for {
         time = sdl.GetTicks()
@@ -145,12 +216,12 @@ main :: proc() {
         camera_compute_view(&camera)
 
         gl.Viewport(0, 0, viewport_x, viewport_y)
-        gl.ClearColor(0.5, 0.5, 0.5, 1.0)
-        gl.Clear(gl.COLOR_BUFFER_BIT)
+        gl.ClearColor(0.75, 0.89, 0.95, 1.0)
+        gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
         gl.UseProgram(program)
         gl.UniformMatrix4fv(uniforms["u_projection"].location, 1, false, &camera.projection[0][0])
         gl.UniformMatrix4fv(uniforms["u_view"].location, 1, false, &camera.view[0][0])
-        gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)
+        gl.DrawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, POINT_CAP)
 
         sdl.GL_SwapWindow(window)
     }
