@@ -125,7 +125,9 @@ main :: proc() {
     time_last := time
 
     camera: Camera; camera_new(&camera)
-    camera.movement_speed = 30
+    movement_speed: f32 = 30
+    yaw_speed: f32 = 0.002
+    pitch_speed: f32 = 0.002
 
     program, program_status := gl.load_shaders_source(VERTEX_SOURCE, FRAGMENT_SOURCE)
     uniforms := gl.get_uniforms_from_program(program)
@@ -189,26 +191,28 @@ main :: proc() {
                     }
                 case .MOUSE_MOTION:
                     if sdl.GetWindowRelativeMouseMode(window) {
-                        camera_rotate(&camera, event.motion.xrel, event.motion.yrel)
+                        camera_rotate(&camera, event.motion.xrel * yaw_speed, event.motion.yrel * pitch_speed, 0)
                     }
             }
         }
 
         if (sdl.GetWindowRelativeMouseMode(window)) {
+            speed := time_delta * movement_speed
+
             if key_state[sdl.Scancode.A] {
-                camera_move(&camera, {-time_delta, 0, 0})
+                camera_move(&camera, {-speed, 0, 0})
             }
 
             if key_state[sdl.Scancode.D] {
-                camera_move(&camera, {time_delta, 0, 0})
+                camera_move(&camera, {speed, 0, 0})
             }
 
             if key_state[sdl.Scancode.S] {
-                camera_move(&camera, {0, 0, -time_delta})
+                camera_move(&camera, {0, 0, -speed})
             }
 
             if key_state[sdl.Scancode.W] {
-                camera_move(&camera, {0, 0, time_delta})
+                camera_move(&camera, {0, 0, speed})
             }
         }
 
