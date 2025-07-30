@@ -20,6 +20,7 @@ If you want SDL2 instead, check [Odin SDL2 Template](https://github.com/deltasam
   - [Windows](#windows-3)
   - [Ubuntu](#ubuntu-3)
 - [OLS in VS Code](#ols-in-vs-code)
+- [OLS in Sublime Text](#ols-in-sublime-text)
 ## Requirements
 Although SDL3 is included in Odin vendor, it might be missing library binaries for your platform, so you need to make sure you can build SDL3 yourself.
 ### Windows
@@ -115,16 +116,10 @@ OLS is Odin Language Server, for more information check [OLS repository](https:/
 * If you have OLS added to path, then set `ols.server.path` to `ols`
 * If you don't have OLS added to path, then set `ols.server.path` to actual path of OLS executable
 * Set `ODIN_ROOT` environment variable to path of Odin directory
-* Optionally you can create `ols.json` file in project folder to configure OLS
+* Optionally you can create `ols.json` file in project folder to configure OLS, check schema for more info
 
       {
           "$schema": "https://raw.githubusercontent.com/DanielGavin/ols/master/misc/ols.schema.json",
-          "collections": [
-              {
-                  "name": "<COLLECTION_NAME>",
-                  "path": "<COLLECTION_PATH>"
-              }
-          ],
           "enable_semantic_tokens": false,
           "enable_document_symbols": true,
           "enable_hover": true,
@@ -137,3 +132,34 @@ OLS is Odin Language Server, for more information check [OLS repository](https:/
               },
           ]
       }
+## OLS in Sublime Text
+* First you need to have [Package Control](https://github.com/wbond/package_control) installed
+* To install, open console by clicking `View > Show Console` in menu bar and run this command:
+
+      from urllib.request import urlretrieve;urlretrieve(url="https://github.com/wbond/package_control/releases/latest/download/Package.Control.sublime-package", filename=sublime.installed_packages_path() + '/Package Control.sublime-package')
+* Open Command Palette and search for `Install Package`, then install these packages: `Odin` and `LSP`
+* To configure OLS, open LSP settings by clicking `Preferences > Package Settings > LSP > Settings`
+* Paste this into settings
+  * This assumes you have OLS executable in path, otherwise set full path yourself in `command` array
+  * This has OLS enabled for all projects, set `enabled` to `false` if you don't want that
+
+        {
+            "clients": {
+                "odin": {
+                    "command": [
+                        "ols"
+                    ],
+                    "enabled": true,
+                    "selector": "source.odin",
+                    "initializationOptions": {
+                        "enable_semantic_tokens": true,
+                        "enable_document_symbols": true,
+                        "enable_hover": true,
+                        "enable_snippets": true,
+                        "enable_format": true,
+                    }
+                }
+            }
+        }
+* To enable OLS for specific projects, you need to have `.sublime-project` file in your folder
+* Open Command Palette and search for `LSP Enable in Project`, then select `odin`
