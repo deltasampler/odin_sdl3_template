@@ -2,7 +2,7 @@
 
 set -e
 
-EXE_NAME="odin_sdl"
+EXE_NAME="odin_sdl3_template"
 SDL_VERSION="release-3.2.16"
 
 mkdir -p build

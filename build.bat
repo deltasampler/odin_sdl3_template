@@ -1,6 +1,6 @@
 @echo off
 
-set EXE_NAME=odin_sdl.exe
+set EXE_NAME=odin_sdl3_template.exe
 set SDL_VERSION=release-3.2.16
 set VSDEVCMD="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
 

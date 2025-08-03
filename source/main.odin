@@ -171,6 +171,7 @@ main :: proc() {
     gl.VertexAttribDivisor(2, 1)
 
     gl.Enable(gl.DEPTH_TEST)
+    gl.Enable(gl.CULL_FACE)
 
     loop: for {
         time = sdl.GetTicks()
@@ -220,7 +221,7 @@ main :: proc() {
         camera_compute_view(&camera)
 
         gl.Viewport(0, 0, viewport_x, viewport_y)
-        gl.ClearColor(0.75, 0.89, 0.95, 1.0)
+        gl.ClearColor(0, 0, 0, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
         gl.UseProgram(program)
         gl.UniformMatrix4fv(uniforms["u_projection"].location, 1, false, &camera.projection[0][0])
