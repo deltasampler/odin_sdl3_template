@@ -10,7 +10,7 @@ WINDOW_TITLE :: "Odin SDL3 Template"
 WINDOW_WIDTH :: 960
 WINDOW_HEIGHT :: 540
 GL_VERSION_MAJOR :: 4
-GL_VERSION_MINOR :: 6
+GL_VERSION_MINOR :: 3
 
 POINT_CAP :: 1024
 POINT_POS_MIN : f32 : -256
@@ -18,7 +18,7 @@ POINT_POS_MAX : f32 : 256
 POINT_RADIUS_MIN : f32 : 0.5
 POINT_RADIUS_MAX : f32 : 8
 
-VERTEX_SOURCE :: `#version 460 core
+VERTEX_SOURCE :: `#version 430 core
     layout(location = 0) in vec3 i_position;
     layout(location = 1) in float i_radius;
     layout(location = 2) in int i_color;
@@ -54,7 +54,7 @@ VERTEX_SOURCE :: `#version 460 core
     }
 `
 
-FRAGMENT_SOURCE :: `#version 460 core
+FRAGMENT_SOURCE :: `#version 430 core
     precision mediump float;
     flat in int v_color;
     in vec2 v_tex_coord;
