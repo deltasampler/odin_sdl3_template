@@ -29,9 +29,17 @@ if "%~1" == "build-sdl3" (
 )
 
 if "%~1" == "build" (
-    odin build source -out:build/output/%EXE_NAME%
+    odin build source -out:build\output\%EXE_NAME%
 )
 
 if "%~1" == "run" (
-    odin run source -out:build/output/%EXE_NAME%
+    odin run source -out:build\output\%EXE_NAME%
+)
+
+if "%~1" == "build-debug" (
+    odin build source -out:build\output\%EXE_NAME% -debug
+)
+
+if "%~1" == "run-debug" (
+    odin run source -out:build\output\%EXE_NAME% -debug
 )

@@ -11,16 +11,15 @@ If you want SDL2 instead, check [Odin SDL2 Template](https://github.com/deltasam
   - [Windows](#windows)
   - [Ubuntu](#ubuntu)
 - [Usage](#usage)
+- [Odin Setup](#odin-setup)
   - [Windows](#windows-1)
   - [Ubuntu](#ubuntu-1)
-- [Odin Setup](#odin-setup)
+- [OLS Setup](#ols-setup)
   - [Windows](#windows-2)
   - [Ubuntu](#ubuntu-2)
-- [OLS Setup](#ols-setup)
-  - [Windows](#windows-3)
-  - [Ubuntu](#ubuntu-3)
 - [OLS in VS Code](#ols-in-vs-code)
 - [OLS in Sublime Text](#ols-in-sublime-text)
+- [Debugging](#debugging)
 ## Requirements
 Although SDL3 is included in Odin vendor, it might be missing library binaries for your platform, so you need to make sure you can build SDL3 yourself.
 ### Windows
@@ -48,22 +47,17 @@ Although SDL3 is included in Odin vendor, it might be missing library binaries f
 
         ./build.sh build-sdl3
 ## Usage
-### Windows
-* Build executable
+    # Build executable
+    ./build.bat build
 
-      .\build.bat build
+    # Build executable in debug mode
+    ./build.bat build-debug
 
-* Build executable and run
+    # Build executable and run
+    ./build.bat run
 
-      .\build.bat run
-### Ubuntu
-* Build executable
-
-      .\build.sh build
-
-* Build executable and run
-
-      .\build.sh run
+    # Build executable and run in debug mode
+    ./build.bat run-debug
 ## Odin Setup
 For more information check [official installation guide](https://odin-lang.org/docs/install/)
 ### Windows
@@ -163,3 +157,7 @@ OLS is Odin Language Server, for more information check [OLS repository](https:/
         }
 * To enable OLS for specific projects, you need to have `.sublime-project` file in your folder
 * Open Command Palette and search for `LSP Enable in Project`, then select `odin`
+## Debugging
+For debugging you can use [RAD Debugger](https://github.com/EpicGamesExt/raddebugger)
+* Build odin in debug mode and then attach executable to RAD Debugger
+* After that you can put breakpoints and run it

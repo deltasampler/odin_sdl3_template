@@ -29,3 +29,11 @@ fi
 if [ "$1" = "run" ]; then
     odin run source -out:build/output/"$EXE_NAME"
 fi
+
+if [ "$1" = "build-debug" ]; then
+    odin build source -out:build/output/"$EXE_NAME" -debug
+fi
+
+if [ "$1" = "run-debug" ]; then
+    odin run source -out:build/output/"$EXE_NAME" -debug
+fi
