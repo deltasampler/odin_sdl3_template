@@ -1,6 +1,5 @@
 package main
 
-import "core:fmt"
 import glm "core:math/linalg/glsl"
 
 Camera :: struct {
@@ -17,23 +16,23 @@ Camera :: struct {
     view: glm.mat4
 }
 
-camera_new :: proc(camera: ^Camera) {
+init_camera :: proc(camera: ^Camera) {
     camera.forward = {0, 0, -1}
     camera.world_up = {0, 1, 0}
     camera.is_locked = true
-    camera.near = 0.001
+    camera.near = 1e-3
     camera.far = 1000
-    camera.fov = glm.radians_f32(90)
-    camera_rotate(camera, 0, 0, 0)
+    camera.fov = 90
+    rotate_camera(camera, 0, 0, 0)
 }
 
-camera_move :: proc(camera: ^Camera, direction: glm.vec3) {
+move_camera :: proc(camera: ^Camera, direction: glm.vec3) {
     camera.position += camera.forward * direction.z
     camera.position += camera.right * direction.x
     camera.position += camera.up * direction.y
 }
 
-camera_rotate :: proc(camera: ^Camera, yaw: f32, pitch: f32, roll: f32) {
+rotate_camera :: proc(camera: ^Camera, yaw: f32, pitch: f32, roll: f32) {
     if (camera.is_locked) {
         camera.up = camera.world_up
     }
@@ -60,7 +59,7 @@ camera_rotate :: proc(camera: ^Camera, yaw: f32, pitch: f32, roll: f32) {
     camera.up = glm.normalize(glm.cross(camera.right, camera.forward))
 }
 
-camera_point_at :: proc(camera: ^Camera, point: glm.vec3) {
+point_camera_at :: proc(camera: ^Camera, point: glm.vec3) {
     if glm.distance(camera.position, point) < glm.F32_EPSILON {
         return
     }
@@ -74,19 +73,19 @@ camera_point_at :: proc(camera: ^Camera, point: glm.vec3) {
     camera.up = glm.normalize(glm.cross(camera.right, camera.forward))
 }
 
-camera_compute_projection :: proc(camera: ^Camera, viewport_x: f32, viewport_y: f32) {
-    camera.projection = glm.mat4Perspective(camera.fov, viewport_x / viewport_y, camera.near, camera.far)
-}
-
-camera_compute_view :: proc(camera: ^Camera) {
-    camera.view = glm.mat4LookAt(camera.position, camera.position + camera.forward, camera.up)
-}
-
-camera_lock :: proc(camera: ^Camera) {
+lock_camera :: proc(camera: ^Camera) {
     camera.is_locked = true
     camera.world_up = camera.up
 }
 
-camera_unlock :: proc(camera: ^Camera) {
+unlock_camera :: proc(camera: ^Camera) {
     camera.is_locked = false
+}
+
+compute_camera_projection :: proc(camera: ^Camera, aspect: f32) {
+    camera.projection = glm.mat4Perspective(glm.radians(camera.fov), aspect, camera.near, camera.far)
+}
+
+compute_camera_view :: proc(camera: ^Camera) {
+    camera.view = glm.mat4LookAt(camera.position, camera.position + camera.forward, camera.up)
 }

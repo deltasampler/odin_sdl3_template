@@ -124,7 +124,7 @@ main :: proc() {
     time_delta : f32 = 0
     time_last := time
 
-    camera: Camera; camera_new(&camera)
+    camera: Camera; init_camera(&camera)
     movement_speed: f32 = 30
     yaw_speed: f32 = 0.002
     pitch_speed: f32 = 0.002
@@ -192,7 +192,7 @@ main :: proc() {
                     }
                 case .MOUSE_MOTION:
                     if sdl.GetWindowRelativeMouseMode(window) {
-                        camera_rotate(&camera, event.motion.xrel * yaw_speed, event.motion.yrel * pitch_speed, 0)
+                        rotate_camera(&camera, event.motion.xrel * yaw_speed, event.motion.yrel * pitch_speed, 0)
                     }
             }
         }
@@ -201,24 +201,24 @@ main :: proc() {
             speed := time_delta * movement_speed
 
             if key_state[sdl.Scancode.A] {
-                camera_move(&camera, {-speed, 0, 0})
+                move_camera(&camera, {-speed, 0, 0})
             }
 
             if key_state[sdl.Scancode.D] {
-                camera_move(&camera, {speed, 0, 0})
+                move_camera(&camera, {speed, 0, 0})
             }
 
             if key_state[sdl.Scancode.S] {
-                camera_move(&camera, {0, 0, -speed})
+                move_camera(&camera, {0, 0, -speed})
             }
 
             if key_state[sdl.Scancode.W] {
-                camera_move(&camera, {0, 0, speed})
+                move_camera(&camera, {0, 0, speed})
             }
         }
 
-        camera_compute_projection(&camera, auto_cast viewport_x, auto_cast viewport_y)
-        camera_compute_view(&camera)
+        compute_camera_projection(&camera, f32(viewport_x) / f32(viewport_y))
+        compute_camera_view(&camera)
 
         gl.Viewport(0, 0, viewport_x, viewport_y)
         gl.ClearColor(0, 0, 0, 1.0)
